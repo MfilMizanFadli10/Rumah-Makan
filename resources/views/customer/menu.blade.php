@@ -89,6 +89,19 @@
             Dessert
         </button>
 
+        <a
+    href="{{ route('customer.mahidang') }}"
+    class="filter-btn"
+    style="
+        text-decoration:none;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+    "
+>
+    Mahidang
+</a>
+
     </div>
 
 
@@ -148,6 +161,44 @@
                         {{ $menu->deskripsi ?? 'Menu pilihan rumah makan.' }}
 
                     </p>
+
+                    {{-- RATING MENU --}}
+                @php
+                    $jumlahUlasan = $menu->testimonis->count();
+                    $ratingRata = $jumlahUlasan > 0
+                        ? round($menu->testimonis->avg('rating'), 1)
+                        : 0;
+                @endphp
+
+                <div class="menu-rating">
+
+                    @if($jumlahUlasan > 0)
+
+                        <span class="rating-star">
+                            ⭐ {{ number_format($ratingRata, 1) }}
+                        </span>
+
+                        <span class="rating-count">
+                            ({{ $jumlahUlasan }} ulasan)
+                        </span>
+
+                    @else
+
+                        <span class="rating-empty">
+                            ⭐ Belum ada rating
+                        </span>
+
+                    @endif
+
+                    <button 
+                    type="button"
+                    class="btn-lihat-ulasan"
+                   onclick="document.getElementById('ulasanModal{{ $menu->id }}').style.display='flex'"
+                >
+                    💬 Lihat Ulasan
+                </button>
+
+                </div>
 
 
                     <div class="menu-bottom">
@@ -242,6 +293,101 @@
 
 </div>
 
+{{-- =====================================================
+     MODAL ULASAN
+===================================================== --}}
+
+@foreach($menus as $menu)
+
+    <div
+        id="ulasanModal{{ $menu->id }}"
+        class="ulasan-modal"
+    >
+
+        <div class="ulasan-box">
+
+            <div class="ulasan-header">
+
+                <div>
+                    <strong>
+                        Ulasan {{ $menu->nama_menu }}
+                    </strong>
+
+                    <div class="ulasan-rating-header">
+                        @if($menu->testimonis->count() > 0)
+
+                            ⭐ {{ number_format($menu->testimonis->avg('rating'), 1) }}
+                            · {{ $menu->testimonis->count() }} ulasan
+
+                        @else
+
+                            ⭐ Belum ada rating
+
+                        @endif
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    class="ulasan-close"
+                    onclick="tutupUlasan({{ $menu->id }})"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <div class="ulasan-body">
+
+                @forelse($menu->testimonis->sortByDesc('created_at') as $testimoni)
+
+                    <div class="ulasan-item">
+
+                        <strong>
+                            {{ $testimoni->pesanan->nama_pelanggan ?? 'Pelanggan' }}
+                        </strong>
+
+                        <div class="ulasan-stars">
+                            {{ str_repeat('⭐', $testimoni->rating) }}
+                        </div>
+
+                        <p>
+                            {{ $testimoni->isi_testimoni }}
+                        </p>
+
+                        <small>
+                            {{ $testimoni->created_at->format('d M Y') }}
+                        </small>
+
+                    </div>
+
+                @empty
+
+                    <div class="ulasan-kosong">
+
+                        <div style="font-size:40px;">
+                            💬
+                        </div>
+
+                        <strong>
+                            Belum ada ulasan
+                        </strong>
+
+                        <p>
+                            Belum ada pelanggan yang memberikan ulasan untuk menu ini.
+                        </p>
+
+                    </div>
+
+                @endforelse
+
+            </div>
+
+        </div>
+
+    </div>
+
+@endforeach
 
 
 {{-- =====================================================
@@ -493,6 +639,49 @@
         min-height:45px;
 
     }
+
+    /* =====================================================
+        RATING MENU
+    ===================================================== */
+
+        .menu-rating {
+            margin-top:10px;
+            margin-bottom:15px;
+            display:flex;
+            align-items:center;
+            gap:6px;
+            flex-wrap:wrap;
+        }
+
+        .rating-star {
+            font-size:14px;
+            font-weight:bold;
+            color:#d9a441;
+        }
+
+        .rating-count {
+            font-size:13px;
+            color:#777;
+        }
+
+        .rating-empty {
+            font-size:13px;
+            color:#999;
+        }
+
+        .btn-lihat-ulasan {
+            border:none;
+            background:none;
+            color:#8b0000;
+            font-size:13px;
+            font-weight:bold;
+            cursor:pointer;
+            padding:0;
+        }
+
+        .btn-lihat-ulasan:hover {
+            text-decoration:underline;
+        }
 
 
     /* =====================================================
@@ -1228,8 +1417,98 @@
 
     }
 
-</style>
+    /* =====================================================
+        MODAL ULASAN
+    ===================================================== */
 
+        .ulasan-modal {
+            display:none;
+            position:fixed;
+            inset:0;
+            background:rgba(0,0,0,0.5);
+            z-index:10000;
+            align-items:center;
+            justify-content:center;
+            padding:20px;
+        }
+
+        .ulasan-box {
+            width:500px;
+            max-width:100%;
+            max-height:80vh;
+            background:white;
+            border-radius:15px;
+            overflow:hidden;
+            box-shadow:0 10px 40px rgba(0,0,0,0.25);
+        }
+
+        .ulasan-header {
+            background:#8b0000;
+            color:white;
+            padding:18px 20px;
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+        }
+
+        .ulasan-header strong {
+            font-size:18px;
+        }
+
+        .ulasan-rating-header {
+            margin-top:5px;
+            font-size:13px;
+        }
+
+        .ulasan-close {
+            background:none;
+            border:none;
+            color:white;
+            font-size:28px;
+            cursor:pointer;
+        }
+
+        .ulasan-body {
+            max-height:55vh;
+            overflow-y:auto;
+            padding:20px;
+        }
+
+        .ulasan-item {
+            padding:15px 0;
+            border-bottom:1px solid #eee;
+        }
+
+        .ulasan-item:last-child {
+            border-bottom:none;
+        }
+
+        .ulasan-stars {
+            margin-top:5px;
+            font-size:13px;
+        }
+
+        .ulasan-item p {
+            color:#555;
+            font-size:14px;
+            margin:8px 0;
+        }
+
+        .ulasan-item small {
+            color:#999;
+        }
+
+        .ulasan-kosong {
+            text-align:center;
+            padding:30px 10px;
+            color:#777;
+        }
+
+        .ulasan-kosong p {
+            font-size:13px;
+        }
+
+                </style>
 
 
 {{-- =====================================================
@@ -1908,6 +2187,43 @@
         }
     );
 
-</script>
+     // =====================================================
+     // MODAL ULASAN
+     // =====================================================
+
+    function bukaUlasan(menuId) {
+
+        const modal = document.getElementById(
+            'ulasanModal' + menuId
+        );
+
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+    }
+
+
+    function tutupUlasan(menuId) {
+
+        const modal = document.getElementById(
+            'ulasanModal' + menuId
+        );
+
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+
+    // Klik bagian luar modal untuk menutup
+    document.addEventListener('click', function(event) {
+
+        if (event.target.classList.contains('ulasan-modal')) {
+            event.target.style.display = 'none';
+        }
+
+    });
+
+    </script>
 
 @endsection

@@ -15,6 +15,7 @@ use App\Http\Controllers\AdminReservasiController;
 use App\Http\Controllers\AdminProfilController;
 use App\Http\Controllers\RiwayatController;
 use App\Http\Controllers\FasilitasController;
+use App\Http\Controllers\MahidangController;
 
 use App\Models\Menu;
 use App\Models\Fasilitas;
@@ -134,6 +135,22 @@ Route::middleware('auth')->group(function () {
 
 
     // ==================================================
+    // DATA MAHIDANG
+    // ==================================================
+
+    Route::get('/admin/mahidang', [MahidangController::class, 'adminIndex'])
+        ->name('admin.mahidang');
+
+    Route::get('/admin/mahidang/{id}/edit', [MahidangController::class, 'edit'])
+        ->name('admin.mahidang.edit');
+
+    Route::put('/admin/mahidang/{id}', [MahidangController::class, 'update'])
+        ->name('admin.mahidang.update');
+
+    Route::delete('/admin/mahidang/{id}', [MahidangController::class, 'destroy'])
+        ->name('admin.mahidang.destroy');
+
+    // ==================================================
     // TESTIMONI
     // ==================================================
 
@@ -226,6 +243,17 @@ Route::get('/menu', function () {
 
 })->name('customer.menu');
 
+
+// ======================================================
+// MAHIDANG PELANGGAN
+// ======================================================
+
+Route::get('/mahidang', [MahidangController::class, 'create'])
+    ->name('customer.mahidang');
+
+Route::post('/mahidang', [MahidangController::class, 'store'])
+    ->name('customer.mahidang.store');
+
 // ======================================================
 // RESERVASI PELANGGAN
 // ======================================================
@@ -277,4 +305,4 @@ Route::get('/testimoni', [TestimoniController::class, 'create'])
     ->name('customer.testimoni');
 
 Route::post('/testimoni', [TestimoniController::class, 'storeCustomer'])
-    ->name('customer.testimoni.store');
+    ->name('customer.testimoni.store');  

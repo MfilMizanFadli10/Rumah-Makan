@@ -28,4 +28,10 @@ class Menu extends Model
     {
         return $this->hasMany(DetailPesanan::class, 'menu_id');
     }
+
+    public function testimonis()
+    {
+        return $this->hasMany(Testimoni::class, 'menu_id');
+    }
+
 }

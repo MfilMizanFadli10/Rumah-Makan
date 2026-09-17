@@ -6,7 +6,10 @@
 
 <div style="padding:60px 8%;">
 
+    {{-- ================================================= --}}
     {{-- JUDUL --}}
+    {{-- ================================================= --}}
+
     <div style="
         text-align:center;
         margin-bottom:40px;
@@ -29,7 +32,7 @@
         </h1>
 
         <p style="color:#777;">
-            Lihat kembali pesanan dan reservasi yang telah Anda lakukan.
+            Lihat kembali pesanan, reservasi, dan Mahidang yang telah Anda lakukan.
         </p>
 
     </div>
@@ -52,7 +55,7 @@
             color:#650000;
             margin-bottom:20px;
         ">
-             Riwayat Pesanan
+            Riwayat Pesanan
         </h2>
 
 
@@ -135,7 +138,7 @@
                 padding:25px;
                 color:#777;
             ">
-                 Belum ada riwayat pesanan.
+                Belum ada riwayat pesanan.
             </div>
 
         @endforelse
@@ -149,7 +152,7 @@
 
     <div style="
         max-width:900px;
-        margin:0 auto;
+        margin:0 auto 30px;
         background:white;
         padding:30px;
         border-radius:15px;
@@ -160,7 +163,7 @@
             color:#650000;
             margin-bottom:20px;
         ">
-             Riwayat Reservasi
+            Riwayat Reservasi
         </h2>
 
 
@@ -256,12 +259,134 @@
                 padding:25px;
                 color:#777;
             ">
-                 Belum ada riwayat reservasi.
+                Belum ada riwayat reservasi.
             </div>
 
         @endforelse
 
     </div>
+
+
+    {{-- ================================================= --}}
+    {{-- RIWAYAT MAHIDANG --}}
+    {{-- ================================================= --}}
+
+    <div style="
+        max-width:900px;
+        margin:0 auto 30px;
+        background:white;
+        padding:30px;
+        border-radius:15px;
+        box-shadow:0 5px 20px rgba(0,0,0,0.08);
+    ">
+
+        <h2 style="
+            color:#650000;
+            margin-bottom:20px;
+        ">
+            Riwayat Mahidang
+        </h2>
+
+
+        @forelse($mahidangs as $mahidang)
+
+            <div style="
+                padding:20px 0;
+                border-bottom:1px solid #eee;
+            ">
+
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                    gap:15px;
+                    flex-wrap:wrap;
+                ">
+
+                    <div>
+
+                        <strong style="
+                            color:#8b0000;
+                            font-size:18px;
+                        ">
+                            {{ $mahidang->kode_mahidang }}
+                        </strong>
+
+                        <p style="
+                            margin-top:6px;
+                            color:#777;
+                            font-size:14px;
+                        ">
+                            {{ $mahidang->created_at->format('d-m-Y') }}
+                            •
+                            {{ $mahidang->created_at->format('H:i') }}
+                        </p>
+
+                    </div>
+
+
+                    <div style="
+                        padding:7px 13px;
+                        background:#fff3cd;
+                        color:#856404;
+                        border-radius:20px;
+                        font-size:13px;
+                        font-weight:bold;
+                    ">
+                        {{ ucwords(str_replace('_', ' ', $mahidang->status)) }}
+                    </div>
+
+                </div>
+
+
+                <div style="
+                    margin-top:12px;
+                    color:#555;
+                    font-size:14px;
+                ">
+
+                    <p>
+                        <strong>Nama:</strong>
+                        {{ $mahidang->nama_pelanggan }}
+                    </p>
+
+                    <p style="margin-top:5px;">
+                        <strong>No. HP:</strong>
+                        {{ $mahidang->no_hp }}
+                    </p>
+
+                    <p style="margin-top:5px;">
+                        <strong>Meja:</strong>
+                        Meja {{ $mahidang->meja->nomor_meja ?? '-' }}
+                    </p>
+
+                    @if($mahidang->catatan)
+
+                        <p style="margin-top:5px;">
+                            <strong>Catatan:</strong>
+                            {{ $mahidang->catatan }}
+                        </p>
+
+                    @endif
+
+                </div>
+
+            </div>
+
+        @empty
+
+            <div style="
+                text-align:center;
+                padding:25px;
+                color:#777;
+            ">
+                Belum ada riwayat Mahidang.
+            </div>
+
+        @endforelse
+
+    </div>
+
 
 </div>
 

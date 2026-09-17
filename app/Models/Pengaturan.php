@@ -14,6 +14,7 @@ class Pengaturan extends Model
         'jam_operasional',
         'no_hp',
         'tagline',
+        'nama_mahidang',
         'banner',
         'whatsapp',
         'logo',

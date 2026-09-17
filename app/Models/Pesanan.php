@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Pesanan extends Model
 {
@@ -22,6 +21,8 @@ class Pesanan extends Model
         'total_harga',
         'status',
         'metode_pembayaran',
+        'bukti_pembayaran',
+        'status_pembayaran',
         'catatan',
     ];
 
@@ -35,8 +36,8 @@ class Pesanan extends Model
         return $this->hasMany(DetailPesanan::class, 'pesanan_id');
     }
 
-    public function testimoni(): HasOne
+   public function testimonis(): HasMany
     {
-        return $this->hasOne(Testimoni::class, 'pesanan_id');
+        return $this->hasMany(Testimoni::class, 'pesanan_id');
     }
 }

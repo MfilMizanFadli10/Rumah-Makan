@@ -123,6 +123,36 @@
 
             </div>
 
+            <div>
+
+                <label>Nama Layanan Mahidang</label>
+
+                <input
+                    type="text"
+                    name="nama_mahidang"
+                    value="{{ old('nama_mahidang', $pengaturan->nama_mahidang ?? 'Mahidang') }}"
+                    placeholder="Contoh: Mahidang"
+                    required
+                    style="
+                        width:100%;
+                        padding:11px;
+                        margin-top:6px;
+                        border:1px solid #ddd;
+                        border-radius:8px;
+                    "
+                >
+
+                <small style="
+                    display:block;
+                    margin-top:6px;
+                    color:#888;
+                    font-size:12px;
+                ">
+                    Nama ini hanya digunakan untuk tampilan layanan Mahidang kepada pelanggan.
+                </small>
+
+            </div>
+
 
             <div>
 

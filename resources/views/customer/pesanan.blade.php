@@ -88,11 +88,12 @@
         {{-- FORM PESANAN --}}
         {{-- ================================= --}}
 
-        <form
-            id="form-pelanggan"
-            action="{{ route('customer.pesanan.store') }}"
+        <form 
+            id="form-pelanggan" 
+            action="{{ route('customer.pesanan.store') }}" 
             method="POST"
-            style="display:none;"
+            enctype="multipart/form-data"
+            style="display:none;" 
         >
 
             @csrf
@@ -331,48 +332,214 @@
     </div>
 
 
-    {{-- QRIS --}}
-    <div id="info-qris" style="display:none;">
+   {{-- QRIS --}}
+<div id="info-qris" style="display:none;">
 
-        <h3 style="
-            margin-bottom:15px;
-            color:#8b0000;
+    <div style="
+        background:linear-gradient(135deg, #8b0000, #b00000);
+        color:white;
+        padding:22px 25px;
+        border-radius:16px 16px 0 0;
+        text-align:center;
+        box-shadow:0 4px 12px rgba(139,0,0,0.15);
+    ">
+
+        <div style="
+            font-size:28px;
+            font-weight:800;
+            letter-spacing:1px;
+            margin-bottom:5px;
         ">
-             Pembayaran QRIS
-        </h3>
+            QRIS
+        </div>
+
+        <div style="
+            font-size:14px;
+            opacity:.9;
+        ">
+            Scan untuk melakukan pembayaran
+        </div>
+
+    </div>
+
+
+    <div style="
+        background:white;
+        padding:30px 20px 25px;
+        border:1px solid #eadada;
+        border-top:none;
+        border-radius:0 0 16px 16px;
+        text-align:center;
+    ">
 
         @if($pengaturan?->qris)
 
-            <img
-                src="{{ asset('storage/' . $pengaturan->qris) }}"
-                alt="QRIS {{ $pengaturan?->nama_rumah_makan ?? 'Rumah Makan' }}"
-                style="
-                    display:block;
-                    width:250px;
-                    max-width:100%;
-                    margin:10px auto;
-                    border-radius:10px;
-                    border:1px solid #ddd;
-                "
-            >
-
-            <p style="
-                text-align:center;
-                color:#777;
-                margin-top:10px;
+            <div style="
+                display:inline-block;
+                background:white;
+                padding:12px;
+                border:2px solid #8b0000;
+                border-radius:16px;
+                box-shadow:0 8px 25px rgba(0,0,0,0.10);
+                margin-bottom:20px;
             ">
-                Silakan scan QRIS untuk melakukan pembayaran.
-            </p>
+
+                <img
+                    src="{{ asset('storage/' . $pengaturan->qris) }}"
+                    alt="QRIS {{ $pengaturan?->nama_rumah_makan ?? 'Rumah Makan' }}"
+                    style="
+                        display:block;
+                        width:280px;
+                        height:280px;
+                        max-width:100%;
+                        object-fit:contain;
+                        border-radius:8px;
+                    "
+                >
+
+            </div>
+
+
+            <div style="
+                font-size:20px;
+                font-weight:800;
+                color:#8b0000;
+                margin-bottom:6px;
+            ">
+                {{ $pengaturan?->nama_rumah_makan ?? 'Rumah Makan' }}
+            </div>
+
+
+            <div style="
+                color:#777;
+                font-size:14px;
+                margin-bottom:20px;
+            ">
+                Silakan scan QRIS untuk melakukan pembayaran
+            </div>
+
+
+            <div style="
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                gap:9px;
+                background:#8b0000;
+                color:white;
+                padding:12px 22px;
+                border-radius:9px;
+                font-weight:bold;
+                font-size:14px;
+                box-shadow:0 4px 12px rgba(139,0,0,0.20);
+            ">
+                 Scan QRIS untuk Membayar
+            </div>
+
+
+            <div style="
+                margin-top:20px;
+                padding:14px 16px;
+                background:#fff8f5;
+                border:1px solid #f0dddd;
+                border-radius:10px;
+                color:#777;
+                font-size:13px;
+                line-height:1.6;
+            ">
+                <strong style="color:#8b0000;">
+                    💡 Tips Pembayaran
+                </strong>
+                <br>
+                Buka aplikasi pembayaran Anda, lalu arahkan kamera
+                ke QRIS di atas.
+            </div>
+
 
         @else
 
-            <p style="color:#777;">
-                QRIS belum tersedia.
-            </p>
+            <div style="
+                padding:35px 20px;
+                color:#777;
+            ">
+                <div style="
+                    font-size:45px;
+                    margin-bottom:10px;
+                ">
+                    
+                </div>
+
+                <strong style="color:#8b0000;">
+                    QRIS belum tersedia
+                </strong>
+
+                <p style="
+                    margin-top:7px;
+                    font-size:14px;
+                ">
+                    Silakan pilih metode pembayaran lainnya.
+                </p>
+            </div>
 
         @endif
 
     </div>
+
+</div>  
+
+{{-- BUKTI PEMBAYARAN --}}
+<div
+    id="upload-bukti"
+    style="
+        display:none;
+        margin-top:20px;
+        padding:18px;
+        background:#fff;
+        border:1px solid #eadada;
+        border-radius:12px;
+    "
+>
+
+    <label style="
+        display:block;
+        font-weight:bold;
+        margin-bottom:8px;
+        color:#333;
+    ">
+         Bukti Pembayaran
+    </label>
+
+    <p style="
+        color:#777;
+        font-size:13px;
+        margin-bottom:12px;
+    ">
+        Silakan upload foto atau screenshot bukti pembayaran Anda.
+    </p>
+
+    <input
+        type="file"
+        name="bukti_pembayaran"
+        id="bukti-pembayaran"
+        accept="image/jpeg,image/png,image/jpg"
+        style="
+            width:100%;
+            padding:10px;
+            border:1px solid #ddd;
+            border-radius:8px;
+            box-sizing:border-box;
+            background:white;
+        "
+    >
+
+    <small style="
+        display:block;
+        margin-top:8px;
+        color:#999;
+    ">
+        Format: JPG, JPEG, PNG. Maksimal 2 MB.
+    </small>
+
+</div>
 
 
     {{-- TUNAI --}}
@@ -477,16 +644,25 @@ const infoQris =
 const infoTunai =
     document.getElementById('info-tunai');
 
+const uploadBukti =
+    document.getElementById('upload-bukti');
+
+const inputBukti =
+    document.getElementById('bukti-pembayaran');
+
 
 metodePembayaran.addEventListener('change', function () {
 
     const metode = this.value;
 
     // Sembunyikan semuanya dulu
-    infoPembayaran.style.display = 'none';
-    infoTransfer.style.display = 'none';
-    infoQris.style.display = 'none';
-    infoTunai.style.display = 'none';
+        infoPembayaran.style.display = 'none';
+        infoTransfer.style.display = 'none';
+        infoQris.style.display = 'none';
+        infoTunai.style.display = 'none';
+
+        uploadBukti.style.display = 'none';
+        inputBukti.required = false;
 
 
     // Kalau belum memilih
@@ -502,15 +678,20 @@ metodePembayaran.addEventListener('change', function () {
     // TRANSFER
     if (metode === 'transfer') {
 
-        infoTransfer.style.display = 'block';
+    infoTransfer.style.display = 'block';
+
+    uploadBukti.style.display = 'block';
+    inputBukti.required = true;
 
     }
 
-
     // QRIS
-    else if (metode === 'qris') {
+   else if (metode === 'qris') {
 
-        infoQris.style.display = 'block';
+    infoQris.style.display = 'block';
+
+    uploadBukti.style.display = 'block';
+    inputBukti.required = true;
 
     }
 

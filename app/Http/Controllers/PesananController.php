@@ -9,6 +9,7 @@ use App\Models\DetailPesanan;
 use App\Models\Pengaturan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class PesananController extends Controller
 {
@@ -150,7 +151,7 @@ class PesananController extends Controller
             'no_hp' => 'nullable|string|max:20',
             'meja_id' => 'required|exists:meja,id',
             'jumlah_orang' => 'required|integer|min:1',
-            'metode_pembayaran' => 'required|string',
+            'metode_pembayaran' => 'required|in:tunai,transfer,qris',
 
             'menu_id' => 'required|array|min:1',
             'menu_id.*' => 'required|exists:menu,id',
@@ -194,10 +195,14 @@ class PesananController extends Controller
                 'jumlah_orang' => $request->jumlah_orang,
                 'total_harga' => $totalHarga,
 
-                // STATUS DATABASE
+                // STATUS PESANAN
                 'status' => 'menunggu',
 
+                // PEMBAYARAN
                 'metode_pembayaran' => $request->metode_pembayaran,
+                'bukti_pembayaran' => null,
+                'status_pembayaran' => 'menunggu',
+
                 'catatan' => $request->catatan,
             ]);
 
@@ -238,12 +243,40 @@ class PesananController extends Controller
 
     public function storeCustomer(Request $request)
     {
+        // =================================================
+        // VALIDASI
+        // =================================================
+
         $request->validate([
+
             'nama_pelanggan' => 'required|string|max:255',
+
             'no_hp' => 'nullable|string|max:20',
+
             'meja_id' => 'required|exists:meja,id',
+
             'jumlah_orang' => 'required|integer|min:1',
-            'metode_pembayaran' => 'required|string',
+
+            'metode_pembayaran' => [
+                'required',
+                'in:tunai,transfer,qris'
+            ],
+
+            // Bukti wajib untuk Transfer dan QRIS
+            'bukti_pembayaran' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png',
+                'max:2048',
+
+                Rule::requiredIf(function () use ($request) {
+                    return in_array(
+                        $request->metode_pembayaran,
+                        ['transfer', 'qris']
+                    );
+                }),
+            ],
+
             'catatan' => 'nullable|string',
 
             'menu_id' => 'required|array|min:1',
@@ -252,8 +285,7 @@ class PesananController extends Controller
             'jumlah' => 'required|array|min:1',
             'jumlah.*' => 'required|integer|min:1',
 
-            // PERBAIKAN:
-            // tabel kita adalah "pesanan", bukan "pesanans"
+            // Pesanan lama
             'kode_pesanan_lama' => [
                 'nullable',
                 'string',
@@ -262,10 +294,28 @@ class PesananController extends Controller
         ]);
 
 
+        // =================================================
+        // SIMPAN FILE BUKTI PEMBAYARAN
+        // =================================================
+
+        $buktiPembayaran = null;
+
+        if ($request->hasFile('bukti_pembayaran')) {
+
+            $buktiPembayaran = $request
+                ->file('bukti_pembayaran')
+                ->store('bukti-pembayaran', 'public');
+        }
+
+
         $kodePesanan = null;
 
 
-        DB::transaction(function () use ($request, &$kodePesanan) {
+        DB::transaction(function () use (
+            $request,
+            $buktiPembayaran,
+            &$kodePesanan
+        ) {
 
             // =================================================
             // CEK PESANAN LAMA
@@ -328,14 +378,22 @@ class PesananController extends Controller
                 }
 
 
-                // Hitung ulang total
+                // =================================================
+                // HITUNG ULANG TOTAL
+                // =================================================
+
                 $totalBaru = DetailPesanan::where(
                     'pesanan_id',
                     $pesananLama->id
                 )->sum('subtotal');
 
 
+                // =================================================
+                // UPDATE PESANAN LAMA
+                // =================================================
+
                 $pesananLama->update([
+
                     'total_harga' => $totalBaru,
 
                     // Pesanan kembali menunggu
@@ -345,13 +403,27 @@ class PesananController extends Controller
                         ?: $pesananLama->catatan,
 
                     'nama_pelanggan' => $request->nama_pelanggan,
+
                     'no_hp' => $request->no_hp,
+
                     'jumlah_orang' => $request->jumlah_orang,
-                    'metode_pembayaran' => $request->metode_pembayaran,
+
+                    'metode_pembayaran' =>
+                        $request->metode_pembayaran,
+
+                    // Bukti pembayaran baru
+                    'bukti_pembayaran' =>
+                        $buktiPembayaran,
+
+                    // Pembayaran perlu diverifikasi ulang
+                    'status_pembayaran' => 'menunggu',
                 ]);
 
 
-                // Meja tetap dipesan
+                // =================================================
+                // MEJA TETAP DIPESAN
+                // =================================================
+
                 Meja::where('id', $pesananLama->meja_id)
                     ->update([
                         'status' => 'dipesan'
@@ -386,23 +458,53 @@ class PesananController extends Controller
                 }
 
 
+                // =================================================
+                // BUAT PESANAN
+                // =================================================
+
                 $pesanan = Pesanan::create([
                     'kode_pesanan' => $kodePesanan,
-                    'nama_pelanggan' => $request->nama_pelanggan,
-                    'no_hp' => $request->no_hp,
-                    'meja_id' => $request->meja_id,
-                    'tanggal_pesanan' => now()->toDateString(),
-                    'jam_pesanan' => now()->format('H:i:s'),
-                    'jumlah_orang' => $request->jumlah_orang,
-                    'total_harga' => $totalHarga,
 
-                    // STATUS AWAL
+                    'nama_pelanggan' =>
+                        $request->nama_pelanggan,
+
+                    'no_hp' => $request->no_hp,
+
+                    'meja_id' => $request->meja_id,
+
+                    'tanggal_pesanan' =>
+                        now()->toDateString(),
+
+                    'jam_pesanan' =>
+                        now()->format('H:i:s'),
+
+                    'jumlah_orang' =>
+                        $request->jumlah_orang,
+
+                    'total_harga' =>
+                        $totalHarga,
+
+                    // STATUS PESANAN
                     'status' => 'menunggu',
 
-                    'metode_pembayaran' => $request->metode_pembayaran,
-                    'catatan' => $request->catatan,
+                    // PEMBAYARAN
+                    'metode_pembayaran' =>
+                        $request->metode_pembayaran,
+
+                    'bukti_pembayaran' =>
+                        $buktiPembayaran,
+
+                    'status_pembayaran' =>
+                        'menunggu',
+
+                    'catatan' =>
+                        $request->catatan,
                 ]);
 
+
+                // =================================================
+                // DETAIL PESANAN
+                // =================================================
 
                 foreach ($request->menu_id as $index => $menuId) {
 
@@ -412,15 +514,23 @@ class PesananController extends Controller
 
                     DetailPesanan::create([
                         'pesanan_id' => $pesanan->id,
+
                         'menu_id' => $menu->id,
+
                         'jumlah' => $jumlah,
+
                         'harga' => $menu->harga,
-                        'subtotal' => $menu->harga * $jumlah,
+
+                        'subtotal' =>
+                            $menu->harga * $jumlah,
                     ]);
                 }
 
 
-                // Meja menjadi dipesan
+                // =================================================
+                // MEJA MENJADI DIPESAN
+                // =================================================
+
                 Meja::where('id', $request->meja_id)
                     ->update([
                         'status' => 'dipesan'
@@ -444,7 +554,10 @@ class PesananController extends Controller
 
         return redirect()
             ->route('customer.status-pesanan')
-            ->with('success', 'Pesanan berhasil dikirim.');
+            ->with(
+                'success',
+                'Pesanan berhasil dikirim.'
+            );
     }
 
 
